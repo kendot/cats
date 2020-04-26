@@ -4,6 +4,8 @@ import requests
 import notifiers
 import requests
 from pprint import pprint as pp
+import time
+import datetime
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
@@ -14,7 +16,7 @@ FB = 'https://www.facebook.com/pg/'
 
 shelters = [
     'giffordcatshelter',
-    # 'northeastanimalshelter',
+    'northeastanimalshelter',
     # 'brokentailrescue',
     # 'buddydoghs',
     # 'MelroseHumaneSociety',
@@ -41,22 +43,17 @@ for shelter in shelters:
     soup = BeautifulSoup(page_source, 'lxml')
     posts = []
 
-    post_divs = soup.find_all('div', class_='userContentWrapper')
+    post_divs = soup.find_all('div', class_='userContentWrapper', limit=10)
 
     for post in post_divs:
-        # post_div = post.find('div', class_='userContent').text
-        # date_div = post.find('span', class_='timestampContent')
-        # post_div = post.find('div', class_='text_exposed_root')
-        date_text = post.find('span', class_='timestampContent').get_text()
-        date_text = post.find('span', class_='timestampContent').get_text()
+        attrs_dict = post.find('abbr')
+        date_epoch = int(attrs_dict['data-utime'])
         post_text = post.find('div', class_='userContent').get_text()
-
-        print('{}: {}'.format(date_text, post_text))
+        last_check = datetime.datetime.now() - datetime.timedelta(hours=4)
+        if datetime.datetime.fromtimestamp(date_epoch) > last_check:
+            date_text = attrs_dict['title']
+            print('{}: {}'.format(date_text, post_text))
 
 
 driver.quit()
-# for post in driver.find_elements_by_class_name('userContent'):
-#     print('-'*10)
-#     # print(post.find_element('timestampContent'))
-#     print(post.text)
 
